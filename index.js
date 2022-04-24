@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Running API')
+    res.send('Genius Car Services')
 });
 
 
@@ -20,6 +20,7 @@ async function run() {
     try {
         await client.connect();
         const servicesCollection = client.db('geniusCar').collection('services');
+        const orderCollection = client.db('geniusCar').collection('order');
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -49,6 +50,13 @@ async function run() {
             const result = await servicesCollection.deleteOne(query);
             res.send(result);
         })
+
+        // user POST
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.send(result);
+        })
     }
     finally {
 
@@ -59,5 +67,5 @@ run().catch(console.dir);
 
 
 app.listen(port, () => {
-    console.log('Code is ok');
+    console.log('Genius Car Services Api Is Running');
 })
