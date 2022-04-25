@@ -2,11 +2,29 @@ const express = require('express');
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const port = process.env.PORT || 5000;
 
+// middleware
 app.use(cors());
 app.use(express.json());
+
+function verify(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(404).send({ message: 'Unauthorized Access' })
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, ACCESS_TOKEN_JWT, function (err, decoded) {
+        if (err) {
+            res.status(403).send({ message: 'Forbidden Access' })
+        }
+        console.log('decoded', decoded)
+    });
+    console.log('Inside verify JWT', authHeader);
+    next();
+}
 
 app.get('/', (req, res) => {
     res.send('Genius Car Services')
@@ -21,6 +39,16 @@ async function run() {
         await client.connect();
         const servicesCollection = client.db('geniusCar').collection('services');
         const orderCollection = client.db('geniusCar').collection('order');
+
+
+        // JWT POST
+        app.post('/login', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_JWT, {
+                expiresIn: '1d'
+            });
+            res.send({ token });
+        })
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -59,8 +87,9 @@ async function run() {
         })
 
         // user GET
-        app.get('/order', async (req, res) => {
-            const query = {};
+        app.get('/order', verify, async (req, res) => {
+            const email = req.query.email;
+            const query = { email };
             const cursor = orderCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
