@@ -24,4 +24,14 @@
  * Make change
  * git add . git commit -m"" git push
  * git push heroku main
+ * --------------------
+ * CONNECT CLIENT SITE
+ * --------------------
+ * Open client site npm start
+ * Replace localhost:5000 by heroku link
+ * ----------------
+ * FIREBASE DEPLOY
+ * ----------------
+ * Client site server npm run build
+ * firebase deploy
  */
